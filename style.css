@@ -1,0 +1,51 @@
+div.board {
+    background-image: url('grid.png');
+    position: relative; /* This allows descendant elements to be absolutely positioned on the board. */
+    width: 282px;
+    height: 282px;
+    /*border: solid 1px black;*/
+    padding: 0;
+    margin: 100px;
+}
+
+.marker {
+    position: absolute;
+    top: 140px;
+    left: 140px;
+    width: 8px;
+    height: 8px;
+    background-image: url('marker.png');
+    margin: -3px;
+}
+
+.cage {
+    position: absolute;
+    top: 39px;
+    left: 19px;
+    width: 244px;
+    height: 204px;
+    background-image: url('cage.png');
+}
+
+.vertical-line,
+.horizontal-line,
+.climbing-line,
+.dropping-line {
+    position:absolute;
+    height:22px;
+    width:22px;
+    background-image: url('lines.png');
+}
+.vertical-line {
+    width:2px;
+}
+.horizontal-line {
+    height:2px;
+    background-position: -22px 0;
+}
+.climbing-line {
+    background-position: -2px 0;
+}
+.dropping-line {
+    background-position: -42px 0;
+}

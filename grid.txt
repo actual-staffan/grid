@@ -1,0 +1,22 @@
+object oriented?
+framework?
+
+visualisation
+	table?
+	absolutely positioned images/divs?
+	svg?
+	canvas?
+	color coding by player?
+
+data structure
+	"2d" array of numbers, each number being a bit field for its 8 directions (2*reduntant but allows for efficient lookup)
+	Separate array of moves? (to allow replay, undo, etc [perhaps for drawing as well])
+	playing field as object?
+
+basic logic (rules)
+	validate requested move
+	carry out move if valid
+	preview move (valid/invalid) on mouse-over
+
+ai
+	chess-like, recursive? A*?
