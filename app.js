@@ -17,6 +17,12 @@ function dump(obj) {
     alert(propertiesToString(obj));
 }
 
+/**
+ * Represents a 2d point or vector. Some of its methods rely on a somewhat peculiar
+ * definition of "direction". This is represented as an integer. Assuming a
+ * coordinate system of x going from left to right and y going down, direction 0
+ * means right, direction 1 means diagonally up and right, and so on anticlockwise.
+ */
 function Point(x, y) {
     this.getX = function() {
         return x;
@@ -69,6 +75,9 @@ Point.prototype.offset = function(direction, distance) {
 Point.prototype.cssPos = function() {
     return {left: this.getX() + "px", top: this.getY() + "px"};
 };
+/**
+ * Treating the point as a vector, this method returns its approximate direction.
+ */
 Point.prototype.getDirection = function() {
     var x = this.getX();
     var y = this.getY();
@@ -82,16 +91,31 @@ Point.prototype.getDirection = function() {
     } else { // Diagonal to the right.
         return y > 0 ? 7 : 1;
     }
-}
+};
 Point.min = function(p1, p2) {
     var x = Math.min(p1.getX(), p2.getX());
     var y = Math.min(p1.getY(), p2.getY());
     return new Point(x, y);
-}
+};
 Point.relative = function(from, to) {
     var x = to.getX() - from.getX();
     var y = to.getY() - from.getY();
     return new Point(x, y);
+};
+
+function Console() {
+    var sinker = $("#sinker");
+    
+    this.writeMessage = function(message, classes) {
+        var div = $("<div>" + message + "</div>").addClass("message");
+        //if (classes) {
+            for(var i in classes) div.addClass(classes[i]);
+        //}
+        div.hide();
+        sinker.append(div);
+        div.show(400, "swing");
+        // TODO Remove oldest message if there are too many.
+    };
 }
 
 function Board(halfwidth) {
@@ -101,6 +125,7 @@ function Board(halfwidth) {
     var moves = [];
     var middle = new Point(halfwidth + 2, halfwidth + 2);
     var pos = middle;
+    this.currentPlayer = 1;
     (function(array) {
         var size = width * height;
         for (var i = 0; i < size; i++) {
@@ -146,8 +171,10 @@ function Board(halfwidth) {
         if (validation > 0) {
             this.appendLine(pos, direction);
             pos = pos.offset(direction);
+            if (validation == 1) {
+                this.currentPlayer = 3 - this.currentPlayer;
+            }
         }
-        if(validation == 2) alert("Move again!");
         return validation;
     };
 }
@@ -195,25 +222,66 @@ function VisualBoard() {
     var gridSize = 20;
     this.gridSize = gridSize;
 
+    this.console = new Console();
     this.board = new Board(halfwidth);
     this.div = $("#board");
     this.lineDiv = $("#lines");
     this.markerDiv = $("#marker");
     this.pos = this.getPixelPos(this.board.getPos());
     this.markerDiv.css(this.pos.cssPos());
+    this.players = {1: {name:"Player1", className:"player1"}, 2: {name:"Player2", className:"player2"}};
     
-    // TODO Add the cage (and get rid of the fake cage that's used now).
+    this.writeNewTurn();
+    this.addCage();
     
-    //alert(propertiesToString(this.lineDiv));
-    var me = this;
+    var me = this; // "this" will refer to the event target within the handler.
     this.div.on("click", function(event) {
         var direction = Point.relative(me.pos, me.getPixelPos(event)).getDirection();
-        //if (me.board.move(direction));
-        // TODO perform the move on me.board and update graphics
-        //this.pos = this.getPixelPos(this.board.getPos());
         me.move(direction);
+        event.preventDefault();
     });
     // TODO Also check for mouse movement and draw a visually distinct "preview" line for current position.
+}
+VisualBoard.prototype.addCage = function() {
+    var max = this.board.getWidth() - 3;
+    var gapStart = Math.floor(this.board.getWidth() / 2) - 1;
+    var board = this;
+    var addLine = function(x, y, direction) {
+        var point = new Point(x, y);
+        board.lineDiv.append(board.createLine(point, direction));
+        board.board.appendLine(point, direction);
+    };
+    
+    for (var i = max - 1; i >= 2; i--) {
+        addLine(i, 2, 0);
+        addLine(i, max, 0);
+        if (i < gapStart || i >= gapStart + 2) {
+            addLine(2, i, 6);
+            addLine(max, i, 6);
+        }
+    }
+    addLine(2, gapStart, 4);
+    addLine(2, gapStart + 2, 4);
+    addLine(max, gapStart, 0);
+    addLine(max, gapStart + 2, 0);
+};
+VisualBoard.prototype.move = function(direction) {
+    var startingPos = this.board.getPos();
+    var validation = this.board.move(direction);
+    if (validation > 0) {
+        var line = this.createLine(startingPos, direction);
+        this.lineDiv.append(line);
+        this.pos = this.getPixelPos(this.board.getPos());
+        this.markerDiv.css(this.pos.cssPos());
+        if(validation == 1) this.writeNewTurn();
+    }
+    return validation;
+};
+VisualBoard.prototype.writeNewTurn = function() {
+    this.console.writeMessage("It's " + this.currentPlayer().name + "'s turn to move.", [this.currentPlayer().className]);
+}
+VisualBoard.prototype.currentPlayer = function() {
+    return this.players[this.board.currentPlayer];
 }
 VisualBoard.prototype.createLine = function(pos, direction) {
     var classname;
@@ -239,17 +307,6 @@ VisualBoard.prototype.createLine = function(pos, direction) {
         .addClass(classname)
         .css(topLeft.cssPos());
 }
-VisualBoard.prototype.move = function(direction) {
-    var startingPos = this.board.getPos();
-    var validation = this.board.move(direction);
-    if (validation > 0) {
-        var line = this.createLine(startingPos, direction);
-        $(this.lineDiv.append(line));
-        this.pos = this.getPixelPos(this.board.getPos());
-        this.markerDiv.css(this.pos.cssPos());
-    }
-    return validation;
-};
 VisualBoard.prototype.getPixelPos = function(input) {
     if (input instanceof Point) {
         return new Point(input.getX() * 20, input.getY() * 20);

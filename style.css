@@ -5,7 +5,7 @@ div.board {
     height: 282px;
     /*border: solid 1px black;*/
     padding: 0;
-    margin: 100px;
+    margin: 20px 100px;
 }
 
 .marker {
@@ -48,4 +48,43 @@ div.board {
 }
 .dropping-line {
     background-position: -42px 0;
+}
+
+.console {
+    /*border: solid 1px black;*/
+    height: 110px;
+    position: relative;
+    width: 482px;
+    overflow: hidden;
+}
+.console .sinker {
+    /*border: solid 1px green;*/
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.console .cutoff {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background-image: url('cutoff.png');
+}
+.console .message {
+    border: solid 1px black;
+    margin-top: 2px;
+    border-radius: 3px;
+    font-family: arial;
+    border-color: #f6cf33;
+    background-color: #ffff80;
+}
+.console .player1 {
+    border-color: #ff8080;
+    background-color: #ffdddd;
+}
+.console .player2 {
+    border-color: #8080ff;
+    background-color: #ddddff;
 }
